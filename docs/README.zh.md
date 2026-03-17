@@ -76,7 +76,7 @@
     *   确保您的电脑上已安装 `android-tools`，或从[官方网站](https://developer.android.com/tools/releases/platform-tools)下载 `platform-tools`，然后解压并进入该目录。
     *   从 release 下载并解压 esp 镜像和您想要的 rootfs 镜像。
     *   从[此处](https://github.com/ArKT-7/twrp_device_xiaomi_nabu/releases/tag/mod_linux)下载 ArKT-7 为 nabu 修改的 TWRP。
-    *   从[此处](https://github.com/rodriguezst/nabu-dualboot-img/releases)下载双系统内核补丁 (如果您不知道什么是 secureboot，请下载 NOSB 版本)。
+    *   从[此处](https://github.com/jhuang6451/nabu-dualboot-img/releases)下载双系统内核补丁 (如果您不知道什么是 secureboot，请下载 NOSB 版本)。
 
 2.  分区：
     *   将您的平板电脑连接到电脑。
