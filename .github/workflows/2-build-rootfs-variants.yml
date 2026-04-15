@@ -133,10 +133,6 @@ jobs:
           # Disable rescue kernel generation — not needed on a tablet
           chroot "$ROOTFS_DIR" /bin/bash -c "chmod -x /usr/lib/kernel/install.d/51-dracut-rescue.install 2>/dev/null || true"
 
-          # Tell dracut to include UFS storage drivers for the Mi Pad 5.
-          # The Fedora kernel-sm8150 RPM ships this config, but our custom kernel doesn't.
-          mkdir -p "$ROOTFS_DIR/etc/dracut.conf.d"
-          echo 'force_drivers+=" ufs_qcom phy-qcom-qmp-ufs phy-qcom-ufs "' > "$ROOTFS_DIR/etc/dracut.conf.d/nabu.conf"
 
           echo "Running Fedora kernel-install..."
           chroot "$ROOTFS_DIR" /bin/bash -c "kernel-install add $KVER /boot/vmlinuz-$KVER"
