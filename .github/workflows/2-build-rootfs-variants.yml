@@ -95,6 +95,16 @@ jobs:
         run: |
           chmod +x ./scripts/1-create-rootfs-base.sh
           ./scripts/1-create-rootfs-base.sh
+      - name: Inject Custom UFS Kernel
+        run: |
+          echo "Copying custom kernel to rootfs..."
+          cp ./custom-kernel/*.rpm fedora-rootfs-base/tmp/
+          
+          echo "Installing kernel via chroot..."
+          chroot fedora-rootfs-base /bin/bash -c "rpm -Uvh /tmp/*.rpm --force"
+          
+          echo "Cleaning up..."
+          rm fedora-rootfs-base/tmp/*.rpm
 
       - name: Set base_rootfs_path output
         id: set_path
