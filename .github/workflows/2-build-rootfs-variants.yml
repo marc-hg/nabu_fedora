@@ -95,16 +95,25 @@ jobs:
         run: |
           chmod +x ./scripts/1-create-rootfs-base.sh
           ./scripts/1-create-rootfs-base.sh
-      - name: Inject Custom UFS Kernel
+      - name: Inject Custom Kernel Tar
         run: |
-          echo "Copying custom kernel to rootfs..."
-          cp ./custom-kernel/*.rpm fedora-rootfs-base/tmp/
+          echo "Unzipping the kernel archive..."
+          # Install unzip just in case the builder container doesn't have it
+          dnf install -y unzip
           
-          echo "Installing kernel via chroot..."
-          chroot fedora-rootfs-base /bin/bash -c "rpm -Uvh /tmp/*.rpm --force"
+          # Unzip your new zip file into the custom-kernel folder
+          unzip ./custom-kernel/kernerl.tar.zip -d ./custom-kernel/
           
-          echo "Cleaning up..."
-          rm fedora-rootfs-base/tmp/*.rpm
+          echo "Extracting custom kernel tarball into rootfs..."
+          # Now we extract the .tar file that was inside the zip
+          tar -xf ./custom-kernel/*.tar --strip-components=1 -C fedora-rootfs-base/
+          
+          # Find the exact kernel version name
+          KVER=$(ls fedora-rootfs-base/lib/modules/ | grep nabu | head -n 1)
+          echo "Kernel version detected as: $KVER"
+          
+          echo "Running Fedora kernel-install..."
+          chroot fedora-rootfs-base /bin/bash -c "kernel-install add $KVER /boot/vmlinuz-$KVER"
 
       - name: Set base_rootfs_path output
         id: set_path
