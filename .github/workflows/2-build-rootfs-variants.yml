@@ -130,6 +130,9 @@ jobs:
           mount --bind /dev "$ROOTFS_DIR/dev"
           mount --bind /dev/pts "$ROOTFS_DIR/dev/pts"
 
+          # Disable rescue kernel generation — not needed on a tablet
+          chroot "$ROOTFS_DIR" /bin/bash -c "chmod -x /usr/lib/kernel/install.d/51-dracut-rescue.install 2>/dev/null || true"
+
           echo "Running Fedora kernel-install..."
           chroot "$ROOTFS_DIR" /bin/bash -c "kernel-install add $KVER /boot/vmlinuz-$KVER"
 
