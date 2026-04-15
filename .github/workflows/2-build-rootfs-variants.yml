@@ -111,12 +111,12 @@ jobs:
           # Place modules into /usr/lib/modules/ (Fedora usr-merge) instead of /lib/modules/
           # to avoid overwriting the /lib -> /usr/lib symlink.
           tar -xf "$TARBALL" --strip-components=1 \
-            --include="${TOPLEVEL}/boot/*" \
+            --wildcards "${TOPLEVEL}/boot/*" \
             -C "$ROOTFS_DIR"
 
           mkdir -p "$ROOTFS_DIR/usr/lib/modules"
           tar -xf "$TARBALL" --strip-components=2 \
-            --include="${TOPLEVEL}/lib/modules/*" \
+            --wildcards "${TOPLEVEL}/lib/modules/*" \
             -C "$ROOTFS_DIR/usr/lib"
 
           # Find the exact kernel version name
