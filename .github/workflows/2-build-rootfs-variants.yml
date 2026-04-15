@@ -97,23 +97,46 @@ jobs:
           ./scripts/1-create-rootfs-base.sh
       - name: Inject Custom Kernel Tar
         run: |
+          ROOTFS_DIR="$PWD/fedora-rootfs-base"
+
           echo "Unzipping the kernel archive..."
-          # Install unzip just in case the builder container doesn't have it
           dnf install -y unzip
-          
-          # Unzip your new zip file into the custom-kernel folder
           unzip ./custom-kernel/kernerl.tar.zip -d ./custom-kernel/
-          
-          echo "Extracting custom kernel tarball into rootfs..."
-          # Now we extract the .tar file that was inside the zip
-          tar -xf ./custom-kernel/*.tar --strip-components=1 -C fedora-rootfs-base/
-          
+
+          echo "Extracting custom kernel into rootfs..."
+          TARBALL=$(ls ./custom-kernel/*.tar | head -n 1)
+          TOPLEVEL=$(tar -tf "$TARBALL" | head -n 1 | cut -d/ -f1)
+
+          # Extract only boot/ and lib/modules/ — skip DEBIAN/ metadata.
+          # Place modules into /usr/lib/modules/ (Fedora usr-merge) instead of /lib/modules/
+          # to avoid overwriting the /lib -> /usr/lib symlink.
+          tar -xf "$TARBALL" --strip-components=1 \
+            --include="${TOPLEVEL}/boot/*" \
+            -C "$ROOTFS_DIR"
+
+          mkdir -p "$ROOTFS_DIR/usr/lib/modules"
+          tar -xf "$TARBALL" --strip-components=2 \
+            --include="${TOPLEVEL}/lib/modules/*" \
+            -C "$ROOTFS_DIR/usr/lib"
+
           # Find the exact kernel version name
-          KVER=$(ls fedora-rootfs-base/lib/modules/ | grep nabu | head -n 1)
+          KVER=$(ls "$ROOTFS_DIR/usr/lib/modules/" | grep nabu | head -n 1)
           echo "Kernel version detected as: $KVER"
-          
+
+          # Mount chroot filesystems needed by kernel-install
+          mount --bind /proc "$ROOTFS_DIR/proc"
+          mount --bind /sys "$ROOTFS_DIR/sys"
+          mount --bind /dev "$ROOTFS_DIR/dev"
+          mount --bind /dev/pts "$ROOTFS_DIR/dev/pts"
+
           echo "Running Fedora kernel-install..."
-          chroot fedora-rootfs-base /bin/bash -c "kernel-install add $KVER /boot/vmlinuz-$KVER"
+          chroot "$ROOTFS_DIR" /bin/bash -c "kernel-install add $KVER /boot/vmlinuz-$KVER"
+
+          # Clean up mounts
+          umount "$ROOTFS_DIR/dev/pts" || true
+          umount "$ROOTFS_DIR/dev" || true
+          umount "$ROOTFS_DIR/sys" || true
+          umount "$ROOTFS_DIR/proc" || true
 
       - name: Set base_rootfs_path output
         id: set_path
